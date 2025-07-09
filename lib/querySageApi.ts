@@ -8,6 +8,8 @@ export async function querySageApi(filters: {
   minQuantity: number;
   ecoFriendly?: boolean;
   sortBy: any;
+  sortOrder?: string;
+  limit?:
 }) {
   const data = await callSageApi(SAGE_SERVICE_IDS.PRODUCT_SEARCH, {
     search: {
