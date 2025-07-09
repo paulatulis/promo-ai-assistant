@@ -7,9 +7,11 @@ export async function querySageApi(filters: {
   maxPrice: number;
   minQuantity: number;
   ecoFriendly?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sortBy: any;
   sortOrder?: string;
-  limit?:
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  limit?: any;
 }) {
   const data = await callSageApi(SAGE_SERVICE_IDS.PRODUCT_SEARCH, {
     search: {
