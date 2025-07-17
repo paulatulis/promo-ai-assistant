@@ -11,7 +11,6 @@ export async function callSageApi(serviceId: number, data: Record<string, any>) 
         auth: SAGE_AUTH,
         ...data,
     };
-    console.log('🛰️ SAGE request payload:', JSON.stringify(payload, null, 2));
 
 
     const res = await fetch(SAGE_API_URL, {
@@ -29,7 +28,6 @@ export async function callSageApi(serviceId: number, data: Record<string, any>) 
     }
 
     const json = await res.json();
-    console.log('📨 SAGE raw response:', JSON.stringify(json, null, 2));
 
     // Only treat it as an error if it includes `ok: false`
     if ('ok' in json && !json.ok) {

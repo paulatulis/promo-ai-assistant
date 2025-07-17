@@ -51,11 +51,14 @@ export default function HomePage() {
 
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-2 text-center">Promo Product Assistant</h1>
+    <main className="container mx-auto px-4 py-12">
+      <h1 className="text-3xl font-bold text-center mb-2">Promo Product Assistant</h1>
       <p className="text-center text-gray-600 mb-6">
         Describe what you're looking for and we’ll find matching promo products from our catalog.
       </p>
+
+
+
 
       <div className="flex flex-col sm:flex-row gap-2 mb-6">
         <textarea
@@ -67,7 +70,7 @@ export default function HomePage() {
         />
         <button
           onClick={handleSearch}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+          className="w-48 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
           disabled={loading}
         >
           {loading ? 'Searching...' : 'Search'}
@@ -89,7 +92,11 @@ export default function HomePage() {
               )}
               <div className="flex-1 space-y-2">
                 <h2 className="font-semibold text-lg">{product.name}</h2>
+                <div className='mx-4'> 
                 <p className="text-sm text-gray-700">{product.description}</p>
+
+
+                </div>
                 <p className="text-sm text-gray-800 font-medium">
                   Price: ${product.price || 'N/A'}
                 </p>
