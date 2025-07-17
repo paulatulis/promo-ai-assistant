@@ -1,14 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 
 export default function HomePage() {
   const [input, setInput] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [expandedProductId, setExpandedProductId] = useState<number | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [productDetails, setProductDetails] = useState<Record<number, any>>({});
   const [detailLoading, setDetailLoading] = useState(false);
+
   const handleSearch = async () => {
     setLoading(true);
     setExpandedProductId(null);
@@ -18,14 +22,12 @@ export default function HomePage() {
       body: JSON.stringify({ description: input }),
     });
     const data = await res.json();
-    console.log('data', data)
     setResults(data.products || []);
     setLoading(false);
   };
 
   const handleViewDetails = async (prodEId: number) => {
     if (expandedProductId === prodEId) {
-      // Collapse if already expanded
       setExpandedProductId(null);
       return;
     }
@@ -33,7 +35,6 @@ export default function HomePage() {
     setDetailLoading(true);
     setExpandedProductId(prodEId);
 
-    // Only fetch if we haven't already
     if (!productDetails[prodEId]) {
       const res = await fetch('/api/product-detail', {
         method: 'POST',
@@ -50,64 +51,79 @@ export default function HomePage() {
 
 
   return (
-    <main className="p-8 max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold mb-4">Promo Product Assistant</h1>
-      <textarea
-        className="w-full border p-2 rounded mb-4"
-        rows={4}
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Describe what you need, e.g. '100 purple items under $5 for a college event'"
-      />
-      <button
-        onClick={handleSearch}
-        className="bg-blue-600 text-white px-4 py-2 rounded"
-        disabled={loading}
-      >
-        {loading ? 'Searching...' : 'Search Products'}
-      </button>
+    <main className="max-w-4xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-2 text-center">Promo Product Assistant</h1>
+      <p className="text-center text-gray-600 mb-6">
+        Describe what you're looking for and we’ll find matching promo products from our catalog.
+      </p>
 
-      <div className="mt-6 space-y-4">
+      <div className="flex flex-col sm:flex-row gap-2 mb-6">
+        <textarea
+          className="flex-1 p-3 border border-gray-300 rounded-md shadow-sm resize-none"
+          rows={3}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="e.g. '100 purple pens under $2'"
+        />
+        <button
+          onClick={handleSearch}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+          disabled={loading}
+        >
+          {loading ? 'Searching...' : 'Search'}
+        </button>
+      </div>
+
+      <div className="space-y-6">
         {results.map((product, i) => (
-          <div key={i} className="border p-4 rounded shadow">
-            <h2 className="font-semibold">{product.name}</h2>
-            <p>{product.description}</p>
-            {product.image && (
-              <img
-                src={product.image}
-                alt={product.name}
-                className="mt-2 max-w-sm"
-              />
-            )}
-            <p className="mt-2 text-sm">Price: ${product.price}</p>
-            <button
-              onClick={() => handleViewDetails(product.prodEId)}
-              className="mt-2 text-blue-600 underline"
-            >
-              {expandedProductId === product.prodEId && detailLoading ? 'Loading...' : 'More Info'}
-            </button>
-            {expandedProductId === product.prodEId && productDetails[product.prodEId] && (
-              <div className="mt-4 p-4 border rounded bg-gray-50 shadow text-sm">
-                <h3 className="font-bold text-lg">{productDetails[product.prodEId].name}</h3>
-                <p>{productDetails[product.prodEId].description}</p>
-                {productDetails[product.prodEId].image && (
-                  <img
-                    src={productDetails[product.prodEId].image}
-                    alt={productDetails[product.prodEId].name}
-                    className="mt-2 max-w-sm"
-                  />
-                )}
-                <p className="mt-2">Production Time: {productDetails[product.prodEId].productionTime || 'N/A'}</p>
-                <p>Colors: {productDetails[product.prodEId].colors || 'N/A'}</p>
-                <p>Imprint: {productDetails[product.prodEId].imprint || 'N/A'}</p>
-                <p className="text-gray-500">Supplier: {productDetails[product.prodEId].supplier}</p>
+          <div key={i} className="border p-4 rounded-lg shadow-sm bg-white">
+            <div className="flex flex-col sm:flex-row gap-4 items-start">
+              {product.image && (
+                <Image
+                  src={product.image}
+                  alt={product.name}
+                  className="w-48 h-auto object-contain rounded border"
+                  width={100}
+                  height={100}
+                />
+              )}
+              <div className="flex-1 space-y-2">
+                <h2 className="font-semibold text-lg">{product.name}</h2>
+                <p className="text-sm text-gray-700">{product.description}</p>
+                <p className="text-sm text-gray-800 font-medium">
+                  Price: ${product.price || 'N/A'}
+                </p>
+                <button
+                  onClick={() => handleViewDetails(product.prodEId)}
+                  className="text-blue-600 text-sm underline hover:text-blue-800"
+                >
+                  {expandedProductId === product.prodEId && detailLoading
+                    ? 'Loading...'
+                    : expandedProductId === product.prodEId
+                      ? 'Hide Details'
+                      : 'More Info'}
+                </button>
               </div>
-            )}
+            </div>
+
+            {expandedProductId === product.prodEId &&
+              productDetails[product.prodEId] && (
+                <div className="mt-4 bg-gray-50 border rounded p-4 text-sm space-y-1">
+                  <p><span className="font-medium">Production Time:</span> {productDetails[product.prodEId].productionTime || 'N/A'}</p>
+                  <p><span className="font-medium">Colors:</span> {productDetails[product.prodEId].colors || 'N/A'}</p>
+                  <p><span className="font-medium">Imprint:</span> {productDetails[product.prodEId].imprint || 'N/A'}</p>
+                  <p><span className="font-medium">Supplier:</span> {productDetails[product.prodEId].supplier || 'N/A'}</p>
+                </div>
+              )}
           </div>
         ))}
       </div>
-
-
     </main>
   );
+
+
+
+
+
 }
+

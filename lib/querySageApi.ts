@@ -27,7 +27,7 @@ export async function querySageApi(filters: {
 
     },
   });
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return data.products?.map((p: any) => ({
     name: p.name || 'Unnamed Product',
     description: p.description || 'No description provided',
