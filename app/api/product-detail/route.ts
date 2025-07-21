@@ -10,10 +10,19 @@ export async function POST(req: NextRequest) {
         }
 
         const details = await queryProductDetail(prodEId);
+        console.log('details', details)
 
         return NextResponse.json(details);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Product Detail Error:', error);
-        return NextResponse.json({ error: error.message || 'Something went wrong' }, { status: 500 });
+        let message = 'something went wrong'
+        if (error instanceof Error) {
+            message = error.message;
+        } else if (typeof error === 'string') {
+            message = error;
+        }
+
+        return NextResponse.json({ error: message }, { status: 500 });
+
     }
 }

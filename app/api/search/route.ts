@@ -1,3 +1,5 @@
+import { ProductDetail } from '@/app/types/product';
+import { queryProductDetail } from '@/lib/queryProductDetail';
 import { querySageApi } from '@/lib/querySageApi';
 import { NextRequest, NextResponse } from 'next/server';
 import { OpenAI } from 'openai';
@@ -16,35 +18,55 @@ export async function POST(req: NextRequest) {
                 type: 'function',
                 function: {
                     name: 'searchProducts',
-                    description: 'Search for promotional products based on criteria',
+                    description: 'Search for promotional products based on detailed criteria',
                     parameters: {
                         type: 'object',
                         properties: {
                             color: { type: 'string' },
+                            category: { type: 'string' },
                             maxPrice: { type: 'number' },
                             minQuantity: { type: 'number' },
-                            category: { type: 'string' },
                             ecoFriendly: { type: 'boolean' },
-                            limit: {
-                                type: 'number',
-                                description: 'Maximum number of products to return (default 10)',
-                            },
                             sortBy: {
                                 type: 'string',
-                                enum: ['price', 'relevance'],
-                                description: 'How to sort results',
+                                enum: ['price', 'relevance'], // if SAGE accepts more, add here
                             },
                             sortOrder: {
                                 type: 'string',
                                 enum: ['asc', 'desc'],
-                                description: 'Sort direction (e.g., cheapest = asc)',
                             },
+                            limit: { type: 'number' },
+                            itemNum: { type: 'string' },
+                            itemNumExact: { type: 'boolean' },
+                            itemName: { type: 'string' },
+                            priceLow: { type: 'number' },
+                            verified: { type: 'boolean' },
+                            recyclable: { type: 'boolean' },
+                            newProduct: { type: 'boolean' },
+                            unionShop: { type: 'boolean' },
+                            esg: { type: 'string' },
+                            popular: { type: 'boolean' },
+                            fresh: { type: 'boolean' },
+                            timely: { type: 'boolean' },
+                            prodTime: { type: 'number' },
+                            includeRush: { type: 'boolean' },
+                            madeIn: { type: 'string' },
+                            prefGroups: { type: 'string' },
+                            suppId: { type: 'string' },
+                            lineName: { type: 'string' },
+                            siteCountry: { type: 'string' },
+                            updatedSince: { type: 'string', format: 'date-time' },
+                            maxTotalItems: { type: 'number' },
+                            spc: { type: 'string' },
+                            keywords: { type: 'string' },
+                            themes: { type: 'string' },
                         },
                         required: [],
                     },
                 },
             },
         ];
+
 
 
 
@@ -68,12 +90,27 @@ export async function POST(req: NextRequest) {
         const toolCall = chatRes.choices[0].message.tool_calls?.[0];
         const filters = toolCall ? JSON.parse(toolCall.function.arguments) : {};
 
-        // Now query SAGE using the extracted filters
-        const products = await querySageApi(filters);
+        const basicResults = await querySageApi(filters);
+        const enrichedResults = await Promise.all(
+            basicResults.map(async (product: ProductDetail) => {
+                const detail = await queryProductDetail(product.prodEId);
+                return detail || product; // fallback to 103 data if 105 fails
+            })
+        );
 
-        return NextResponse.json({ filters, products });
-    } catch (error: any) {
+        return NextResponse.json({ filters, enrichedResults });
+    } catch (error: unknown) {
         console.error('API error:', error);
-        return NextResponse.json({ error: error.message || 'Something went wrong' }, { status: 500 });
+
+        let message = 'Something went wrong';
+
+        if (error instanceof Error) {
+            message = error.message;
+        } else if (typeof error === 'string') {
+            message = error;
+        }
+
+        return NextResponse.json({ error: message }, { status: 500 });
     }
+
 }

@@ -4,14 +4,13 @@ import {
     SAGE_API_VERSION,
 } from './sageConfig';
 
-export async function callSageApi(serviceId: number, data: Record<string, any>) {
+export async function callSageApi(serviceId: number, data: Record<string, unknown>) {
     const payload = {
         serviceId,
         apiVer: SAGE_API_VERSION,
         auth: SAGE_AUTH,
         ...data,
     };
-
 
     const res = await fetch(SAGE_API_URL, {
         method: 'POST',
@@ -33,9 +32,6 @@ export async function callSageApi(serviceId: number, data: Record<string, any>) 
     if ('ok' in json && !json.ok) {
         throw new Error(`SAGE API response error: ${json.errMsg || 'Unknown error'}`);
     }
-
-    return json;
-
 
     return json;
 }
